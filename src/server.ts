@@ -3,6 +3,7 @@
 import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
+import { envVars } from "./app/config/env";
 
 let server: Server;
 
@@ -14,8 +15,8 @@ const startServer = async () => {
 
     console.log("Connected to MongoDB successfully");
 
-    server = app.listen(5000, () => {
-      console.log("Server is running on port 5000");
+    server = app.listen(envVars.PORT, () => {
+      console.log(`Server is running on port ${envVars.PORT}`);
     });
   } catch (error) {
     console.error("Error starting the server:", error);
