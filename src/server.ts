@@ -9,9 +9,7 @@ let server: Server;
 
 const startServer = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://tour-management-db:tour-db-backend-api@cluster0.x6gil.mongodb.net/tour-management-backend?retryWrites=true&w=majority&appName=Cluster0"
-    );
+    await mongoose.connect(envVars.DB_URL);
 
     console.log("Connected to MongoDB successfully");
 
