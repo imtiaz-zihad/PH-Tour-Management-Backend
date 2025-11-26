@@ -55,7 +55,7 @@ process.on("SIGTERM",()=>{
         });
         process.exit(1);
     }
-})
+}) 
 
 process.on("SIGINT",()=>{
     console.log("SIGINT signal recive.., Shutting down the server");

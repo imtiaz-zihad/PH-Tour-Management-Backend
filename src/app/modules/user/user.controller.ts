@@ -38,4 +38,4 @@ export const UserController = {
   getAllUsers,
 };
 
-// route matching --> controller --> service --> model --> DB
+// route matching -(app.ts,index.ts,user.route.ts)-> controller --> service --> model --> DB
