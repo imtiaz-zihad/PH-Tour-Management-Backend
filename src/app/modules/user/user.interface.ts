@@ -8,7 +8,7 @@ export enum Role {
     SUPER_ADMIN = 'SUPER_ADMIN'
 }
 export interface IAuthProvider{
-    provider: string;
+    provider: "google" | "crediantials";
     providerId: string;
 }
 
