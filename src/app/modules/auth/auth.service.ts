@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/AppError";
 import { IUser } from "../user/user.interface";
@@ -30,10 +31,14 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
     role: isUserExits.role,
   };
 
-  const accessToken =generateToken(jwtPayload,envVars.JWT_ACCESS_SECRET,envVars.JWT_ACCESS_EXPIRES)
+  const accessToken =generateToken(jwtPayload,envVars.JWT_ACCESS_SECRET,envVars.JWT_ACCESS_EXPIRES);
+  const refreshToken =generateToken(jwtPayload,envVars.JWT_REFRESH_SECRET,envVars.JWT_REFRESH_EXPIRES)
 
+  const {password: pass, ...rest} = isUserExits;
   return {
-    accessToken
+    accessToken,
+    refreshToken,
+    user: isUserExits,
   };
 };
 
