@@ -1,32 +1,42 @@
-import  httpStatus  from "http-status-codes";
+import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/AppError";
-import { IUser } from "../user/user.interface"
+import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
-import bcryptjs from  "bcryptjs"
-
-const credentialsLogin = async(payload: Partial<IUser>) =>{
-    const {email, password} = payload;
-    const isUserExits = await User.findOne({email});
-
-    if(!isUserExits){
-        throw new AppError(httpStatus.BAD_REQUEST, "Email not exits ")
-    }
+import bcryptjs from "bcryptjs";
+import { generateToken } from "../../utils/jwt";
+import { envVars } from "../../config/env";
 
 
-    const isPasswordMatched = await bcryptjs.compare(password as string, isUserExits.password as string);
+const credentialsLogin = async (payload: Partial<IUser>) => {
+  const { email, password } = payload;
+  const isUserExits = await User.findOne({ email });
 
-    console.log(password);
-    
+  if (!isUserExits) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Email not exits ");
+  }
 
-    if(!isPasswordMatched){
-        throw new AppError(httpStatus.BAD_REQUEST, "Password Is incorrect")
-    }
+  const isPasswordMatched = await bcryptjs.compare(
+    password as string,
+    isUserExits.password as string
+  );
 
-    return {
-        email: isUserExits.email
-    }
-}
+  if (!isPasswordMatched) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Password Is incorrect");
+  }
+
+  const jwtPayload = {
+    userId: isUserExits._id,
+    email: isUserExits.email,
+    role: isUserExits.role,
+  };
+
+  const accessToken =generateToken(jwtPayload,envVars.JWT_ACCESS_SECRET,envVars.JWT_ACCESS_EXPIRES)
+
+  return {
+    accessToken
+  };
+};
 
 export const AuthServices = {
-    credentialsLogin
-}
+  credentialsLogin,
+};

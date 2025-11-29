@@ -4,6 +4,7 @@ import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./app/config/env";
+import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 let server: Server;
 
@@ -22,51 +23,54 @@ const startServer = async () => {
   }
 };
 
-startServer();
+(async () => {
+  await startServer();
+  await seedSuperAdmin();
+})();
 
-process.on("unhandledRejection",(err)=>{
-    console.log("Unhandled Rejection, Shutting down the server", err);
+process.on("unhandledRejection", (err) => {
+  console.log("Unhandled Rejection, Shutting down the server", err);
 
-    if (server) {
-        server.close(()=>{
-            process.exit(1);
-        });
-        process.exit(1);
-    }
-})
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+    process.exit(1);
+  }
+});
 
-process.on("uncaughtException",(err)=>{
-    console.log("Uncaught Exception  Rejection, Shutting down the server", err);
+process.on("uncaughtException", (err) => {
+  console.log("Uncaught Exception  Rejection, Shutting down the server", err);
 
-    if (server) {
-        server.close(()=>{
-            process.exit(1);
-        });
-        process.exit(1);
-    }
-})
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+    process.exit(1);
+  }
+});
 
-process.on("SIGTERM",()=>{
-    console.log("SIGTERM signal recive.., Shutting down the server");
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal recive.., Shutting down the server");
 
-    if (server) {
-        server.close(()=>{
-            process.exit(1);
-        });
-        process.exit(1);
-    }
-}) 
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+    process.exit(1);
+  }
+});
 
-process.on("SIGINT",()=>{
-    console.log("SIGINT signal recive.., Shutting down the server");
+process.on("SIGINT", () => {
+  console.log("SIGINT signal recive.., Shutting down the server");
 
-    if (server) {
-        server.close(()=>{
-            process.exit(1);
-        });
-        process.exit(1);
-    }
-})
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+    process.exit(1);
+  }
+});
 
 // Unhandled Rejection  handling
 //Promise.reject(new Error("Unhandled Rejection Error"));
@@ -77,5 +81,5 @@ process.on("SIGINT",()=>{
 /**
  * unhandleed Rejection error
  * uncaught rejection error
- * signal termination 
+ * signal termination
  */
