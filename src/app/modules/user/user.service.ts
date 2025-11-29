@@ -1,15 +1,86 @@
-import { IUser } from "./user.interface";
+import httpStatus from "http-status-codes";
+import AppError from "../../errorHelpers/AppError";
+import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
+import bcryptsjs from "bcryptjs";
+import { envVars } from "../../config/env";
+import { JwtPayload } from "jsonwebtoken";
+import bcryptjs from "bcryptjs";
 
 const createUser = async (payload: Partial<IUser>) => {
-  const { name, email } = payload;
+  const { email, password, ...rest } = payload;
+
+  const isUserExits = await User.findOne({ email });
+
+  if (isUserExits) {
+    throw new AppError(httpStatus.BAD_REQUEST, "USER_ALREADY_EXISTS");
+  }
+
+  const hasedPassword = await bcryptsjs.hash(
+    password as string,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+
+  // const isPasswordSet = await bcryptsjs.compare(password as string, hasedPassword);
+
+  const authProvider: IAuthProvider = {
+    provider: "crediantials",
+    providerId: email as string,
+  };
+
   const user = await User.create({
-    name,
     email,
+    password: hasedPassword,
+    auths: [authProvider],
+    ...rest,
   });
   return user;
 };
 
+const updateUser = async (
+  userId: string,
+  payload: Partial<IUser>,
+  decodedToken: JwtPayload
+) => {
+  const ifUserExits = await User.findById(userId);
+
+  if (!ifUserExits) {
+    throw new AppError(httpStatus.NOT_FOUND, "User Not Found");
+  }
+
+  // if(ifUserExits.isDeleted || ifUserExits.isActive == IsActive.BLOCKED){
+  //       throw new AppError(httpStatus.FORBIDDEN, "Can not Update your data");
+  // }
+
+  if (payload.role) {
+    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+      throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    }
+
+    if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+      throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    }
+  }
+
+  if (payload.isActive || payload.isDeleted || payload.isVerified) {
+    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
+      throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    }
+  }
+  if (payload.password) {
+    payload.password = await bcryptjs.hash(
+      payload.password,
+      envVars.BCRYPT_SALT_ROUND
+    );
+  }
+
+  const newUpdateUser = await User.findByIdAndUpdate(userId, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  return newUpdateUser;
+};
 const getAllUsers = async () => {
   const users = await User.find({});
 
@@ -23,4 +94,4 @@ const getAllUsers = async () => {
   };
 };
 
-export const UserServices = { createUser, getAllUsers };
+export const UserServices = { createUser, getAllUsers,updateUser };

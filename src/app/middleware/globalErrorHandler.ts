@@ -3,6 +3,8 @@
 import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/AppError";
+import { ZodError } from "zod";
+
 
 export const globalErrorHandler = (
   err: any,
@@ -13,12 +15,14 @@ export const globalErrorHandler = (
     let statusCode =  500;
     let message = "Something went wrong";
 
+    
+
     if(err instanceof AppError){
         statusCode = err.statusCode;
         message = err.message; 
     }else if (err instanceof Error){
-        message = err.message;
         statusCode = 500;
+        message = err.message;
     }
 
   res.status(statusCode).json({
