@@ -1,13 +1,25 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
+import "./app/config/passport";
 import { router } from "./app/routes";
-
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import notFound from "./app/middleware/notFound";
-
+import cookieParser from "cookie-parser";
+import passport from "passport";
+import expressSession from "express-session";
 
 const app = express();
 
+app.use(
+  expressSession({
+    secret: "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
 
@@ -23,6 +35,6 @@ app.get("/", (req: Request, res: Response) => {
 app.use(globalErrorHandler);
 
 // Catch-all route for undefined routes
-app.use(notFound); 
+app.use(notFound);
 
 export default app;
