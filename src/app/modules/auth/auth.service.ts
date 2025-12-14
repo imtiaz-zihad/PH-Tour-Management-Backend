@@ -12,32 +12,32 @@ import {
 import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 
-const credentialsLogin = async (payload: Partial<IUser>) => {
-  const { email, password } = payload;
-  const isUserExits = await User.findOne({ email });
+// const credentialsLogin = async (payload: Partial<IUser>) => {
+//   const { email, password } = payload;
+//   const isUserExits = await User.findOne({ email });
 
-  if (!isUserExits) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Email not exits ");
-  }
+//   if (!isUserExits) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Email not exits ");
+//   }
 
-  const isPasswordMatched = await bcryptjs.compare(
-    password as string,
-    isUserExits.password as string
-  );
+//   const isPasswordMatched = await bcryptjs.compare(
+//     password as string,
+//     isUserExits.password as string
+//   );
 
-  if (!isPasswordMatched) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Password Is incorrect");
-  }
+//   if (!isPasswordMatched) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Password Is incorrect");
+//   }
 
-  const userTokens = createUserToken(isUserExits);
+//   const userTokens = createUserToken(isUserExits);
 
-  const { password: pass, ...rest } = isUserExits.toObject();
-  return {
-    accessToken: userTokens.accessToken,
-    refreshToken: userTokens.refreshToken,
-    user: rest,
-  };
-};
+//   const { password: pass, ...rest } = isUserExits.toObject();
+//   return {
+//     accessToken: userTokens.accessToken,
+//     refreshToken: userTokens.refreshToken,
+//     user: rest,
+//   };
+// };
 
 const getNewAccessToken = async (refreshToken: string) => {
   const newAccessToen = await createNewAccessTokrnWithRefreshToken(
@@ -75,7 +75,7 @@ const resetPassword = async (
 };
 
 export const AuthServices = {
-  credentialsLogin,
+  //credentialsLogin,
   getNewAccessToken,
   resetPassword,
 };

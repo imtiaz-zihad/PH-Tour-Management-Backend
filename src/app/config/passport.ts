@@ -8,6 +8,54 @@ import {
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import { Role } from "../modules/user/user.interface";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcryptjs from "bcryptjs";
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email: string, password: string, done) => {
+      try {
+        const isUserExits = await User.findOne({ email });
+
+        // if (!isUserExits) {
+        //   return done(null, false, { message: "User Doesn't exits " });
+        // }
+
+        if(!isUserExits){
+          return done("User Doesn't exits ");
+        }
+
+        const isGoogleAuthenticated = isUserExits.auths.some(providerObjects => providerObjects.provider === 'google');
+
+
+        // if(isGoogleAuthenticated){
+        //   return done("Please login with Google Authenticator Or set a password")
+        // }
+
+        if(isGoogleAuthenticated && !isUserExits.password){
+          return done(null,false,{message: "Please login with Google Authenticator Or set a password"})
+        }
+
+        const isPasswordMatched = await bcryptjs.compare(
+          password as string,
+          isUserExits.password as string
+        );
+
+        if (!isPasswordMatched) {
+         return done(null, false, { message: "Password Doesn't Matched" });
+        }
+
+        return done(null, isUserExits);
+      } catch (error) {
+        done(error);
+      }
+    }
+  )
+);
 
 passport.use(
   new GoogleStrategy(
@@ -64,7 +112,6 @@ passport.deserializeUser(async (id: string, done: any) => {
     const user = await User.findById(id);
     done(null, user);
   } catch (error) {
-    console.log(error);
     done(error);
   }
 });
