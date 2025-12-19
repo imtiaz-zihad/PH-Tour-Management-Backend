@@ -6,19 +6,11 @@ const createDivision = async (payload: IDivision) => {
   if (existingDivision) {
     throw new Error("Division already exists");
   }
-  const baseSlug = payload.name.toLowerCase().split(" ").join("-");
-  let slug = `${baseSlug}-division`;
-
-  let counter = 0;
-  while (await Divison.exists({ slug })) {
-    slug = `${baseSlug}-${counter++}`;
-  }
-
-  payload.slug = slug;
-
   const division = await Divison.create(payload);
   return division;
 };
+
+
 
 const getAllDivisons = async () => {
   const divisions = await Divison.find();
@@ -46,17 +38,17 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
     throw new Error("Division name already exists");
   }
 
-  if (payload.name) {
-    const baseSlug = payload.name.toLowerCase().split(" ").join("-");
-    let slug = `${baseSlug}-division`;
+  // if (payload.name) {
+  //   // const baseSlug = payload.name.toLowerCase().split(" ").join("-");
+  //   // let slug = `${baseSlug}-division`;
 
-    let counter = 0;
-    while (await Divison.exists({ slug })) {
-      slug = `${baseSlug}-${counter++}`;
-    }
+  //   // let counter = 0;
+  //   // while (await Divison.exists({ slug })) {
+  //   //   slug = `${baseSlug}-${counter++}`;
+  //   // }
 
-    payload.slug = slug;
-  }
+  //   // payload.slug = slug;
+  // }
 
   const updateDivision = await Divison.findByIdAndUpdate(id, payload, {
     new: true,
