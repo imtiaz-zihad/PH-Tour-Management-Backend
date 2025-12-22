@@ -10,8 +10,6 @@ const createDivision = async (payload: IDivision) => {
   return division;
 };
 
-
-
 const getAllDivisons = async () => {
   const divisions = await Divison.find();
   const totalDivisions = await Divison.countDocuments();
@@ -23,6 +21,13 @@ const getAllDivisons = async () => {
   };
 };
 
+const getSingleDivison = async (slug: string) => {
+  const division = await Divison.findOne({ slug });
+
+  return {
+    data: division,
+  };
+};
 const updateDivision = async (id: string, payload: Partial<IDivision>) => {
   const existingDivision = await Divison.findById(id);
 
@@ -67,4 +72,5 @@ export const DivisionService = {
   getAllDivisons,
   updateDivision,
   deleteDivision,
+  getSingleDivison,
 };
