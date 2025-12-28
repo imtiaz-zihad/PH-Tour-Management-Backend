@@ -24,7 +24,7 @@ const createUser = async (payload: Partial<IUser>) => {
   // const isPasswordSet = await bcryptsjs.compare(password as string, hasedPassword);
 
   const authProvider: IAuthProvider = {
-    provider: "crediantials",
+    provider: "credentials",
     providerId: email as string,
   };
 
@@ -94,4 +94,23 @@ const getAllUsers = async () => {
   };
 };
 
-export const UserServices = { createUser, getAllUsers,updateUser };
+const getSingleUser = async (id: string) => {
+  const user = await User.findById(id).select("-password");
+  return {
+    data: user,
+  };
+};
+const getMe = async (userId: string) => {
+  const user = await User.findById(userId).select("-password");
+  return {
+    data: user,
+  };
+};
+
+export const UserServices = {
+  createUser,
+  getAllUsers,
+  updateUser,
+  getSingleUser,
+  getMe,
+};

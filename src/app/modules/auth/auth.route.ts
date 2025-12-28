@@ -3,6 +3,7 @@ import { checkAuth } from "../../middleware/checkAuth";
 import { Role } from "../user/user.interface";
 import { AuthControllers } from "./auth.controller";
 import { NextFunction, Request, Response, Router } from "express";
+import { envVars } from "../../config/env";
 
 const router = Router();
 
@@ -27,6 +28,10 @@ router.post(
   checkAuth(...Object.values(Role)),
   AuthControllers.setPassword
 );
+router.post(
+  "/forget-password", 
+  AuthControllers.setPassword
+);
 
 
 
@@ -46,7 +51,7 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", { failureRedirect: `${envVars.FRONTEND_URL}/login?error=There some issue in your account ,Contact with Our suppoort team` }),
   AuthControllers.googleCallbackController
 );
 

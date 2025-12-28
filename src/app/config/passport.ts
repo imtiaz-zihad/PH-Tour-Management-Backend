@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+import httpStatus from "http-status-codes";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import passport from "passport";
 import {
@@ -7,9 +9,10 @@ import {
 } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcryptjs from "bcryptjs";
+import AppError from "../errorHelpers/AppError";
 
 passport.use(
   new LocalStrategy(
@@ -25,19 +28,40 @@ passport.use(
         //   return done(null, false, { message: "User Doesn't exits " });
         // }
 
-        if(!isUserExits){
+        if (!isUserExits) {
           return done("User Doesn't exits ");
         }
+        if (isUserExits.isVerified) {
+          done("User is not Verified");
+          // throw new AppError(httpStatus.BAD_REQUEST, "User is not Verified");
+        }
+        if (
+          isUserExits.isActive === IsActive.BLOCKED ||
+          isUserExits.isActive === IsActive.INACTIVE
+        ) {
+          // throw new AppError(
+          //   httpStatus.BAD_REQUEST,
+          //   `User is ${isUserExits.isActive}`
+          // );
+          done(`User is ${isUserExits.isActive}`);
+        }
+        if (isUserExits.isDeleted) {
+          //done("User is deleted");
+          throw new AppError(httpStatus.BAD_REQUEST, "User is deleted");
+        }
 
-        const isGoogleAuthenticated = isUserExits.auths.some(providerObjects => providerObjects.provider === 'google');
-
+        const isGoogleAuthenticated = isUserExits.auths.some(
+          (providerObjects) => providerObjects.provider === "google"
+        );
 
         // if(isGoogleAuthenticated){
         //   return done("Please login with Google Authenticator Or set a password")
         // }
 
-        if(isGoogleAuthenticated && !isUserExits.password){
-          return done(null,false,{message: "Please login with Google Authenticator Or set a password"})
+        if (isGoogleAuthenticated && !isUserExits.password) {
+          return done(null, false, {
+            message: "Please login with Google Authenticator Or set a password",
+          });
         }
 
         const isPasswordMatched = await bcryptjs.compare(
@@ -46,7 +70,7 @@ passport.use(
         );
 
         if (!isPasswordMatched) {
-         return done(null, false, { message: "Password Doesn't Matched" });
+          return done(null, false, { message: "Password Doesn't Matched" });
         }
 
         return done(null, isUserExits);
@@ -76,10 +100,30 @@ passport.use(
           return done(null, false, { message: "No Email Found" });
         }
 
-        let user = await User.findOne({ email });
+        let isUserExist = await User.findOne({ email });
 
-        if (!user) {
-          user = await User.create({
+        if (isUserExist && !isUserExist.isVerified) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User is not verified")
+          // done("User is not verified")
+          return done(null, false, { message: "User is not verified" });
+        }
+
+        if (
+          isUserExist &&
+          (isUserExist.isActive === IsActive.BLOCKED ||
+            isUserExist.isActive === IsActive.INACTIVE)
+        ) {
+          // throw new AppError(httpStatus.BAD_REQUEST, `User is ${isUserExist.isActive}`)
+          done(`User is ${isUserExist.isActive}`);
+        }
+
+        if (isUserExist && isUserExist.isDeleted) {
+          return done(null, false, { message: "User is deleted" });
+          // done("User is deleted")
+        }
+
+        if (!isUserExist) {
+          isUserExist = await User.create({
             email,
             name: profile.displayName,
             picture: profile.photos?.[0].value,
@@ -94,7 +138,7 @@ passport.use(
           });
         }
 
-        return done(null, user);
+        return done(null, isUserExist);
       } catch (error) {
         console.log("Google Strategy Error", error);
         return done(error);
