@@ -9,6 +9,7 @@ import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Tour } from "../tour/tour.model";
 import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
+import { getTransactionId } from "../../utils/getTransactionId";
 
 /**
  * Duplicate DB Collections / replica
@@ -20,9 +21,7 @@ import { SSLService } from "../sslCommerz/sslCommerz.service";
 
 // Frontend(localhost:5173) - User - Tour - Booking (Pending) - Payment(Unpaid) -> SSLCommerz Page -> Payment Fail / Cancel -> Backend(localhost:5000) -> Update Payment(FAIL / CANCEL) & Booking(FAIL / CANCEL) -> redirect to frontend -> Frontend(localhost:5173/payment/cancel or localhost:5173/payment/fail)
 
-const getTransactionId = () => {
-  return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-};
+
 
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
   const transactionId = getTransactionId();

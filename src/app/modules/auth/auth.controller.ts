@@ -16,11 +16,11 @@ const credentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("local", async (err: any, user: any, info: any) => {
       if (err) {
-        return next(new AppError(401, err));
+        return next(new AppError(err.statusCode || 401, err.message));
       }
 
       if (!user) {
-         return next(new AppError(401, info.message));
+        return next(new AppError(401, info.message));
       }
 
       const userToken = await createUserToken(user);
@@ -89,18 +89,13 @@ const logout = catchAsync(
   }
 );
 
-const resetPassword = catchAsync(
+
+const setPassword = catchAsync(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: Request, res: Response, next: NextFunction) => {
-    const newPassword = req.body.newPassword;
-    const oldPassword = req.body.oldPassword;
-    const decodedToken = req.user;
-
-    await AuthServices.resetPassword(
-      oldPassword,
-      newPassword,
-      decodedToken as JwtPayload
-    );
+    const decodedToken = req.user as JwtPayload;
+    const { password } = req.body;
+    await AuthServices.setPassword(decodedToken.userId, password);
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
@@ -109,6 +104,53 @@ const resetPassword = catchAsync(
     });
   }
 );
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const changePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const newPassword = req.body.newPassword;
+    const oldPassword = req.body.oldPassword;
+    const decodedToken = req.user
+
+    await AuthServices.changePassword(oldPassword, newPassword, decodedToken as JwtPayload);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Password Changed Successfully",
+        data: null,
+    })
+})
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const forgotPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+
+    const { email } = req.body;
+
+    await AuthServices.forgotPassword(email);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Email Sent Successfully",
+        data: null,
+    })
+})
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const decodedToken = req.user
+
+    await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Password Changed Successfully",
+        data: null,
+    })
+})
 const googleCallbackController = catchAsync(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (req: Request, res: Response, next: NextFunction) => {
@@ -142,6 +184,9 @@ export const AuthControllers = {
   credentialsLogin,
   getNewAccessToken,
   logout,
+  changePassword,
   resetPassword,
+  setPassword,
   googleCallbackController,
+  forgotPassword
 };
